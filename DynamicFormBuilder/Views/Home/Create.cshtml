@@ -1,0 +1,141 @@
+﻿@model DynamicFormBuilder.Models.ViewModels.CreateFormViewModel
+@{
+    ViewData["Title"] = "Create Form";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Create New Form</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" id="createFormForm">
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">Form Title <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" placeholder="Enter form title" required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Form Fields</label>
+                        <div id="fieldsContainer">
+                            <!-- Dynamic fields will be added here -->
+                        </div>
+                        <button type="button" id="addFieldBtn" class="btn btn-outline-secondary mt-2">
+                            <i class="bi bi-plus"></i> Add More
+                        </button>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Submit Form
+                        </button>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Instructions</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Enter a title for your form</li>
+                    <li>Click "Add More" to add dropdown fields</li>
+                    <li>
+                        For each field:
+                        <ul>
+                            <li>Set a label</li>
+                            <li>Mark as required if needed</li>
+                            <li>Select a default option</li>
+                        </ul>
+                    </li>
+                    <li>Submit the form to save</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let fieldIndex = 0;
+        const availableOptions = ['Option 1', 'Option 2', 'Option 3'];
+
+        document.getElementById('addFieldBtn').addEventListener('click', function() {
+            const container = document.getElementById('fieldsContainer');
+
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'card mb-3 field-card';
+            fieldDiv.innerHTML = `
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="card-title mb-0">Field ${fieldIndex + 1}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-field">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Field Label</label>
+                            <input type="text" name="Fields[${fieldIndex}].Label" class="form-control"
+                                   placeholder="e.g., Select Country" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Default Option</label>
+                            <select name="Fields[${fieldIndex}].SelectedOption" class="form-select">
+                                <option value="">Select an option</option>
+                                ${availableOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="form-check">
+                            <input type="checkbox" name="Fields[${fieldIndex}].IsRequired"
+                                   value="true" class="form-check-input" id="required${fieldIndex}" />
+                            <input type="hidden" name="Fields[${fieldIndex}].IsRequired" value="false" />
+                            <label class="form-check-label" for="required${fieldIndex}">
+                                Required field
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(fieldDiv);
+            fieldIndex++;
+
+            // Add remove functionality
+            fieldDiv.querySelector('.remove-field').addEventListener('click', function() {
+                fieldDiv.remove();
+                updateFieldIndices();
+            });
+        });
+
+        function updateFieldIndices() {
+            const fieldCards = document.querySelectorAll('.field-card');
+            fieldCards.forEach((card, index) => {
+                const inputs = card.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name && name.includes('Fields[')) {
+                        input.setAttribute('name', name.replace(/Fields\[\d+\]/, `Fields[${index}]`));
+                    }
+                });
+
+                card.querySelector('.card-title').textContent = `Field ${index + 1}`;
+            });
+            fieldIndex = fieldCards.length;
+        }
+
+        // Add first field by default
+        document.getElementById('addFieldBtn').click();
+    </script>
+}

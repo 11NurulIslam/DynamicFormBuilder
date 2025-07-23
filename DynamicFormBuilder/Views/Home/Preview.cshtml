@@ -1,0 +1,67 @@
+﻿@model DynamicFormBuilder.Models.Form
+@{
+    ViewData["Title"] = "Preview Form";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">@Model.Title</h3>
+                <small>Created: @Model.CreatedDate.ToString("MMM dd, yyyy hh:mm tt")</small>
+            </div>
+            <div class="card-body">
+                @if (Model.Fields.Any())
+                {
+                    <form class="preview-form">
+                        @foreach (var field in Model.Fields.OrderBy(f => f.FieldOrder))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    @field.Label
+                                    @if (field.IsRequired)
+                                    {
+                                        <span class="text-danger">*</span>
+                                    }
+                                </label>
+
+                                @{
+                                    var selectClass = "form-select" + (field.IsRequired ? " required-field" : "");
+                                }
+
+                                <select class="@selectClass" required="@field.IsRequired">
+                                    <option value="">Select an option</option>
+                                    <option value="Option 1" selected="@(field.SelectedOption == "Option 1")">Option 1</option>
+                                    <option value="Option 2" selected="@(field.SelectedOption == "Option 2")">Option 2</option>
+                                    <option value="Option 3" selected="@(field.SelectedOption == "Option 3")">Option 3</option>
+                                </select>
+
+                                @if (field.IsRequired)
+                                {
+                                    <div class="form-text text-danger">
+                                        <small><i class="bi bi-asterisk"></i> This field is required</small>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-success me-2">
+                                <i class="bi bi-check-lg"></i> Submit Response
+                            </button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Forms
+                            </a>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> This form has no fields configured.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
